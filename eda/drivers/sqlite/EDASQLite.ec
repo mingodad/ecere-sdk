@@ -13,7 +13,7 @@ public import "EDA"
 #endif
 
 #define uint _uint
-#if !defined(__LUMIN__)
+#if !defined(__LUMIN__) && !defined(SQLITE_OS_WINRT)
 #include "ffi.h"
 #endif
 #undef uint
@@ -443,7 +443,7 @@ class SQLiteDatabase : Database
    bool CreateCustomFunction(const char * name, SQLCustomFunction customFunction)
    {
       bool result = false;
-#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(SQLITE_OS_WINRT)
       Class cfClass = customFunction._class;
       customFunction.method = eClass_FindMethod(cfClass, "function", cfClass.module);
       if(customFunction.method)
@@ -526,7 +526,7 @@ __attribute__((unused)) static Iterator dummy; // TOFIX: forward struct declarat
 
 public ffi_type * FFIGetType(Class type, bool structByValue)
 {
-#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(SQLITE_OS_WINRT)
    if(type)
       switch(type.type)
       {
@@ -587,7 +587,7 @@ public ffi_type * FFIGetType(Class type, bool structByValue)
 static SerialBuffer staticBuffer { };
 void SQLiteFunctionProcessor(sqlite3_context* context, int n, sqlite3_value** values)
 {
-#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(SQLITE_OS_WINRT)
    SQLCustomFunction sqlFunction = sqlite3_user_data(context);
 
    /*  // Simple 1 pointer param returning a string

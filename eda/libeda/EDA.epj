@@ -134,7 +134,8 @@
             "ers.ec",
             "gui.ec",
             "idList.ec",
-            "fieldValue.ec"
+            "fieldValue.ec",
+            "strcasecmp.c"
          ]
       },
       "todo.txt"
