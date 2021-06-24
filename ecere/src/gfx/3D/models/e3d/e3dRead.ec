@@ -245,7 +245,7 @@ static void readBlocks(E3DContext ctx, File f, DisplaySystem displaySystem, E3DB
             {
                Bitmap bitmap { };
                subData = bitmap;
-               incref bitmap;
+               // incref bitmap;
                readSubBlocks = true;
                break;
             }
@@ -404,23 +404,38 @@ static void readBlocks(E3DContext ctx, File f, DisplaySystem displaySystem, E3DB
                texMutex.Wait();
                if(containerType == texture)
                {
+                  Bitmap bitmap = data;
+
                   if(ctx.texturesByID)
                   {
                      if(ctx.texturesByID[id])
                      {
-                        delete (Bitmap)data;
+                        delete bitmap;
                         readSubBlocks = false;
                      }
                      else
                      {
-                        Bitmap bitmap = data;
 #ifdef _DEBUG
                         if(!bitmap._refCount)
-                           PrintLn("WARNING: E3D/textureID bitmap with 0 refs");
+                           ; //PrintLn("WARNING: E3D/textureID bitmap with 0 refs");
 #endif
-                        //incref bitmap;
+                        if(!displaySystem)
+                           incref bitmap; // The AddTexture will do its own incref
                         ctx.curTextureID = id;
                         ctx.texturesByID[id] = bitmap;
+                     }
+                  }
+                  if(displaySystem && bitmap)
+                  {
+                     char name[100];
+                     sprintf(name, "%d", id);
+
+                     if(!displaySystem.GetTexture(name))
+                        displaySystem.AddTexture(name, bitmap);
+                     else if(!ctx.texturesByID)
+                     {
+                        bitmap.Free(displaySystem);
+                        delete bitmap;
                      }
                   }
                }
@@ -428,7 +443,8 @@ static void readBlocks(E3DContext ctx, File f, DisplaySystem displaySystem, E3DB
                {
                   Bitmap * bPtr = data;
                   *bPtr = ctx.texturesByID ? ctx.texturesByID[id] : null;
-                  if(*bPtr) incref (*bPtr);
+                  // TOCHECK: This was causing memory leaks? Textures are shared and appear once in texturesByID?
+                  // if(*bPtr) incref (*bPtr);
                }
                texMutex.Release();
                break;
@@ -807,6 +823,11 @@ static void readBlocks(E3DContext ctx, File f, DisplaySystem displaySystem, E3DB
                      printf("Bug");
                }*/
             }
+            else
+            {
+               if(displaySystem)
+                  displaySystem.AddMaterial(mat);
+            }
          }
          if(header.type == meshNode)
          {
@@ -1050,7 +1071,6 @@ void readE3D(File f, const String fileName, Object object, DisplaySystem display
 {
    char path[MAX_LOCATION];
    E3DContext ctx { path = path };
-   bool freeTexturesByID = false;
 
    if(options != null)
    {
@@ -1064,13 +1084,27 @@ void readE3D(File f, const String fileName, Object object, DisplaySystem display
       ctx.saveCompressedMutex = options.saveCompressedMutex;
    }
    else
-      ctx.texturesByID = { }, freeTexturesByID = true;
+   {
+      ctx.texturesByID = { };
+   }
+
+   // NOTE: Either a display system or a context should be passed in or else materials cannot be managed
+   if(!displaySystem && !ctx.materials)
+      ctx.materials = { };
 
    StripLastDirectory(fileName, path);
    readBlocks(ctx, f, displaySystem, 0, 0, f.GetSize(), object);
 
-   if(freeTexturesByID)
+   if(!options || !options.texturesByID)
+   {
+      if(!displaySystem)
+         PrintLn("WARNING: unmanaged textures will leak loading E3D model");
       delete ctx.texturesByID;
-
+   }
+   if((!options || !options.materials) && !displaySystem)
+   {
+      PrintLn("WARNING: unmanaged materials will leak loading E3D model");
+      delete ctx.materials;
+   }
    delete ctx;
 }
