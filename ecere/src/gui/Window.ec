@@ -5583,6 +5583,14 @@ private:
       if(interimWindow && interimWindow.master)
          interimMaster = interimWindow.master.rootWindow;
 
+      if(active == false && activateRoot && !swap)
+      {
+         if(guiApp.interimWindow)
+            // TODO: Why isn't this destroying the window upon de-activation?
+            //; guiApp.interimWindow.ActivateEx(false, false, false, false, window, swap);
+            guiApp.interimWindow.Destroy(0);
+      }
+
       if(active && state == minimized && window.parent) // && (!window.nativeDecorations || window.rootWindow != window)
          // SetState(normal, false, 0);
          SetState(lastState, false, 0);
@@ -5622,6 +5630,7 @@ private:
          // Testing & FindModal() here: broke reactivating when a modal dialog is up (didn't root activate dialog)
          result = ActivateEx(active, active, false, activateRoot /*&& FindModal()*/, window, swap);
 
+      // TOCHECK: This logic should have de-activated interim windows, causing their destruction?
       if(interimWindow == this && interimMaster && !active)
       {
          while(interimMaster && interimMaster.interim && interimMaster.master)
@@ -6614,6 +6623,12 @@ public:
                            MakeActive();
                            if(this == rootWindow)
                               Flash();
+                        }
+                        else
+                        {
+                           // TOCHECK: Why wasn't interimWindow being set for ToolTips?
+                           if(style.interim && !guiApp.interimWindow)
+                              guiApp.interimWindow = this;
                         }
                      }
 
