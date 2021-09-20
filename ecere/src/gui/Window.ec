@@ -5587,8 +5587,8 @@ private:
       {
          if(guiApp.interimWindow)
             // TODO: Why isn't this destroying the window upon de-activation?
-            //; guiApp.interimWindow.ActivateEx(false, false, false, false, window, swap);
-            guiApp.interimWindow.Destroy(0);
+            guiApp.interimWindow.ActivateEx(false, false, false, false, window, swap);
+            //guiApp.interimWindow.Destroy(0);
       }
 
       if(active && state == minimized && window.parent) // && (!window.nativeDecorations || window.rootWindow != window)
@@ -6626,7 +6626,6 @@ public:
                         }
                         else
                         {
-                           // TOCHECK: Why wasn't interimWindow being set for ToolTips?
                            if(style.interim && !guiApp.interimWindow)
                               guiApp.interimWindow = this;
                         }
