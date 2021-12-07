@@ -51,6 +51,10 @@ public:
    bool normalsInvScale2:1;
    bool externalTexture:1;
    bool blackTint:1;
+   bool textureArray:1;
+   bool multiDraw:1;
+   bool transform3D:1;
+   bool squishFactor:1;
 };
 
 public class CompiledDefaultShader : CompiledShader
@@ -316,6 +320,7 @@ public:
       defs.concatf("\n#define NORMALS_INV_SCALE %d",        state.normalsInvScale2   ? 1 : 0);
       defs.concatf("\n#define TEXTURE_EXTERNAL %d",         state.externalTexture    ? 1 : 0);
       defs.concatf("\n#define BLACKTINT %d",                state.blackTint          ? 1 : 0);
+      defs.concatf("\n#define DISABLE_STEREO %d",           0);
 
       for(i = 0; i < 8; i++)
       {
@@ -837,7 +842,9 @@ public:
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
             glActiveTexture(GL_TEXTURE0);
+#if !defined(__UWP__)      // TOCHECK: ANGLE problem with too many shader states?
             state.specularMapping = true;
+#endif
          }
       }
       modifiedUniforms.material = true;

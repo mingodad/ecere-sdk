@@ -11,7 +11,8 @@ class VersionedShader : Shader
 #if defined(_GLES3) || defined(__LUMIN__)
       defs.concatf("#version 300 es\n");
       defs.concatf("#define GLSL_FLOAT_PRECISION   1\n");
-      defs.concatf("precision highp float;\n"); // medium?
+      //defs.concatf("precision highp float;\n"); // medium?
+      //precision lowp samplerCube;
 #elif defined(_GLES2)
       defs.concatf("#version 100\n");
       defs.concatf("#define GLSL_FLOAT_PRECISION   1\n");

@@ -1,5 +1,8 @@
 #if GLSL_FLOAT_PRECISION
 precision highp float;
+precision lowp sampler2D;
+precision lowp samplerCube;
+precision lowp sampler2DArray;
 #endif
 
 #if __VERSION__ >= 300
@@ -11,9 +14,10 @@ precision highp float;
 
 #if __VERSION__ >= 130
 out vec4 fragColor;
+#define gl_FragColor fragColor
 #endif
 
-#if TEXTURE_ARRAY && !MULTI_DRAW
+#if 1 //TEXTURE_ARRAY && !MULTI_DRAW
 uniform uint layer;
 #endif
 
@@ -125,7 +129,7 @@ uniform uint layer;
 #endif
 
 #if MULTI_DRAW
-   flat in uint drawID;
+   //flat in uint drawID;
 #endif
 
 #if TEXTURE_ARRAY
@@ -353,7 +357,7 @@ void main(void)
 
 #if TEXTURE_ARRAY
       #if MULTI_DRAW
-      uint layer = drawID;  // TODO: Specify per-draw layers using 1D texture or uniform array?
+      //uint layer = drawID;  // TODO: Specify per-draw layers using 1D texture or uniform array?
       #endif
 
 #if SQUISH_FACTOR
@@ -470,10 +474,18 @@ void main(void)
       #endif
    #endif
 #endif
-
+/*
 #if __VERSION__ >= 130
+   //fragColor = vec4(0.0, 0.2, 0.0, 1.0);
+#if 0 //TEXTURE_ARRAY && !MULTI_DRAW
+   //fragColor = vec4(0.0, float(layer) / 16.0, 0.0, 1.0);
+#else
    fragColor = c;
+#endif
+
 #else
    gl_FragColor = c;
 #endif
+*/
+   gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
 }

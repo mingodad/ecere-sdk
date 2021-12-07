@@ -463,7 +463,7 @@ public struct GLAB : GLB
 {
    void use(GLBufferContents contents, int n, int type, uint stride, const void * pointer)
    {
-      if(glabCurArrayBuffer != ((this != null) ? buffer : 0) && glCaps_vertexBuffer)
+      if(1) //glabCurArrayBuffer != ((this != null) ? buffer : 0) && glCaps_vertexBuffer)
          GLABBindBuffer(GL_ARRAY_BUFFER, ((this != null) ? buffer : 0));
 #if ENABLE_GL_SHADERS
       if(glCaps_shaders)
@@ -564,7 +564,7 @@ public struct GLEAB : GLB
       {
 
 #if !defined(__EMSCRIPTEN__)
-         if(glCaps_vertexBuffer && glabCurElementBuffer != ((this != null) ? buffer : 0))
+         if(1) //glCaps_vertexBuffer && glabCurElementBuffer != ((this != null) ? buffer : 0))
 #endif
             GLABBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((this != null) ? buffer : 0));
          if(!glCaps_intAndDouble)
@@ -588,7 +588,7 @@ public struct GLEAB : GLB
 #if !defined(__EMSCRIPTEN__)
          if(glCaps_vertexBuffer)
 #endif
-         if(glabCurElementBuffer != ((this != null) ? buffer : 0))
+         if(1) //glabCurElementBuffer != ((this != null) ? buffer : 0))
             GLABBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((this != null) ? buffer : 0));
          if(!glCaps_intAndDouble)
             type = GL_UNSIGNED_SHORT;

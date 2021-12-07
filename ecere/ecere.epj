@@ -503,6 +503,7 @@
       {
          "Name" : "UWP",
          "Options" : {
+            "Debug" : true,
             "NoLineNumbers" : false,
             "Optimization" : "Speed",
             "PreprocessorDefinitions" : [
@@ -510,7 +511,8 @@
                "__UWP__",
                "ECERE_NOSSL",
                "ECERE_NOFONTCONFIG",
-               "ECERE_NODINPUT"
+               "ECERE_NODINPUT",
+               "_DEBUG"
             ],
             "FastMath" : true
          },
@@ -1491,15 +1493,7 @@
                                  ]
                               },
                               {
-                                 "Name" : "Debug",
-                                 "Platforms" : [
-                                    {
-                                       "Name" : "win32",
-                                       "Options" : {
-                                          "ExcludeFromBuild" : true
-                                       }
-                                    }
-                                 ]
+                                 "Name" : "Debug"
                               }
                            ]
                         },
@@ -1603,15 +1597,7 @@
                                  ]
                               },
                               {
-                                 "Name" : "Debug",
-                                 "Platforms" : [
-                                    {
-                                       "Name" : "win32",
-                                       "Options" : {
-                                          "ExcludeFromBuild" : true
-                                       }
-                                    }
-                                 ]
+                                 "Name" : "Debug"
                               }
                            ]
                         },

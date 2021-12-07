@@ -6,7 +6,11 @@ public import "ecere"
 
 import "e3dDefs"
 
-#define SHARE_INDICES   // Define to use mesh.indices and group.baseIndex
+ #define SHARE_INDICES   // Define to use mesh.indices and group.baseIndex
+
+#ifndef __GNOSIS3__
+File downloadFile(const String url) { return FileOpen(url, read); }
+#endif
 
 static struct E3DBlockHeader
 {

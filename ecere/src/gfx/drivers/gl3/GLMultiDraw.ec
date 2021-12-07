@@ -20,7 +20,9 @@ public define transform3Attribute = 12;
 
 private:
 
-// #define CLIENT_MEM_COMMANDS  // Defined as a work-around for Intel driver that does not seem to support indirect commands buffers?
+#if defined(__UWP__)
+ #define CLIENT_MEM_COMMANDS  // Defined as a work-around for Intel driver that does not seem to support indirect commands buffers?
+#endif
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
@@ -98,7 +100,7 @@ public struct FreeSpots
 };
 
 default:
-#if defined(_GLES3)
+#if defined(_GLES3) && !defined(__UWP__)
 int glVersion = 3;
 #elif defined(_GLES2)
 int glVersion = 2;
@@ -191,6 +193,9 @@ public struct GLArrayTexture
       if(glVersion >= 2)
          glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0 );
    #endif
+#ifdef _DEBUG
+      CheckGLErrors(__FILE__,__LINE__);
+#endif
 
       glTexParameteri(target, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
       glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -394,6 +399,9 @@ public struct GLMultiDraw
          glGenVertexArrays(1, &vao);
       if(minAlloc > commandsCount)
          resize(minAlloc);
+   #ifdef _DEBUG
+         CheckGLErrors(__FILE__,__LINE__);
+   #endif
    }
 
    void resize(uint size)
@@ -402,10 +410,18 @@ public struct GLMultiDraw
       commands = renew0 commands GLDrawCommand[size];
       commandsAlloced = size;
       idsAlloced = size;
+
+      PrintLn("Resizing idsAB (", idsAB.buffer, ") to be ", size, " uint big");
       idsAB.allocate(size * sizeof(uint), null, streamDraw);
+   #ifdef _DEBUG
+         CheckGLErrors(__FILE__,__LINE__);
+   #endif
 #ifndef CLIENT_MEM_COMMANDS
       commandsB.allocate(size * sizeof(GLDrawCommand), null, streamDraw);
 #endif
+   #ifdef _DEBUG
+         CheckGLErrors(__FILE__,__LINE__);
+   #endif
    }
 
    void resizeCommands(uint size)
@@ -506,13 +522,22 @@ public struct GLMultiDraw
    void prepare(int vertNCoords, int verticesStride)
    {
       idsAB.upload(0, totalInstances * sizeof(uint), drawIDs);
+
+#ifdef _DEBUG
+      CheckGLErrors(__FILE__,__LINE__);
+#endif
+
 #ifndef CLIENT_MEM_COMMANDS
       commandsB.upload(0, commandsCount * sizeof(GLDrawCommand), commands);
 #endif
 
+#ifdef _DEBUG
+      CheckGLErrors(__FILE__,__LINE__);
+#endif
       if(glCaps_vao) glBindVertexArray(vao);
 
       // Draw IDs
+      /*
       if(!glCaps_vao || lastIDAB != idsAB.buffer)
       {
          GLABBindBuffer(GL_ARRAY_BUFFER, idsAB.buffer);
@@ -521,7 +546,12 @@ public struct GLMultiDraw
          glEnableVertexAttribArray(drawIDAttribute);
          lastIDAB = idsAB.buffer;
       }
-      if(!glCaps_vao || lastVBO != vertexGLMB.ab.buffer)
+      */
+#ifdef _DEBUG
+      CheckGLErrors(__FILE__,__LINE__);
+#endif
+
+      //if(!glCaps_vao || lastVBO != vertexGLMB.ab.buffer)
       {
          if(vertNCoords)
          {
@@ -531,11 +561,18 @@ public struct GLMultiDraw
          }
          lastVBO = vertexGLMB.ab.buffer;
       }
-      if(!glCaps_vao || lastIBO != indexGLMB.ab.buffer)
+#ifdef _DEBUG
+      CheckGLErrors(__FILE__,__LINE__);
+#endif
+
+      //if(!glCaps_vao || lastIBO != indexGLMB.ab.buffer)
       {
          GLABBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexGLMB.ab.buffer);
          lastIBO = indexGLMB.ab.buffer;
       }
+#ifdef _DEBUG
+      CheckGLErrors(__FILE__,__LINE__);
+#endif
    }
 
    void draw()

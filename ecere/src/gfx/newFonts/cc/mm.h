@@ -150,12 +150,14 @@ extern "C" {
  #define ADDRESSDIFF(a,b) (((char *)a)-((char *)b))
 #endif
 
+#include "cc.h"
 
 #if CC_UNIX
 #include <sys/time.h>
 #endif
 
 #ifdef __WIN32__
+
 int mmGetTimeOfDay( struct timeval *tv );
 #define gettimeofday(a,b) mmGetTimeOfDay(a)
 #endif

@@ -60,7 +60,13 @@ public class MDManager : DrawingManager
       if(!md.vertexGLMB)
       {
          md.init(primMode, minAlloc);
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
          texture.init(texLevels, texW, texH, minAlloc);
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
       }
    }
 
@@ -103,7 +109,7 @@ public class MDManager : DrawingManager
          }
          md.transformsAB.upload(0, md.commandsCount * md.transformSize * sizeof(float), transforms.array);
 
-         if(!glCaps_vao || md.lastTransformAB != md.transformsAB.buffer)
+         //if(!glCaps_vao || md.lastTransformAB != md.transformsAB.buffer)
          {
             GLABBindBuffer(GL_ARRAY_BUFFER, md.transformsAB.buffer);
             if(md.transformSize == 3)
@@ -381,11 +387,29 @@ public class PresentationManager
          tiBillboardDM.drawManager = drawManager;
 
          shapeOverlayDM.init();
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
          shapeBillboardDM.init();
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
          perspective3DDM.init();
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
          tiOverlayDM.init();
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
          tiBillboardDM.init();
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
          texturesDM.init();
+#ifdef _DEBUG
+      checkGLErrors(__FILE__,__LINE__);
+#endif
 
          initialized = true;
       }

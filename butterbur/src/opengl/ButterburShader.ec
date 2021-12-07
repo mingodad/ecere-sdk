@@ -78,6 +78,10 @@ public void setupGL(Display display)
       loadedGLExts = true;
       glVersion = 3;
       glMinorVersion = 2;
+#elif defined(__UWP__)
+      loadedGLExts = true;
+      glVersion = 3;
+      glMinorVersion = 2;
 #else
       ogl_LoadFunctions();
       loadedGLExts = true;
@@ -114,10 +118,13 @@ public:
    bool debugging:1;
    bool constantColor:1;
    bool normalsInvScale2:1;
+   bool externalTexture:1;
+   bool blackTint:1;
    bool textureArray:1;
    bool multiDraw:1;
    bool transform3D:1;
    bool squishFactor:1;
+   bool disableStereo:1;
 };
 
 public class CompiledButterburShader : CompiledShader
@@ -157,16 +164,26 @@ public:
    int uCubeMapMatrix;
    int uAlphaFuncValue;
    int uLayer;
-   //int uDrawID;
+   int uPosOffset;
+   int uTransform0, uTransform1, uTransform2, uTransform3;
 
    bool initialSetup; initialSetup = true;
 
-   void registerUniforms(int program, DefaultShaderBits state)
+   void registerUniforms(int program, ButterburShaderBits state)
    {
 #if ENABLE_GL_SHADERS
       uPrjMatrix        = glGetUniformLocation(program, "projection_matrix");
       uMatDiffuse       = glGetUniformLocation(program, "matDiffuse");
-      uLayer            = glGetUniformLocation(program, "layer");
+      uLayer            = glGetUniformLocation(program, "layer"); //drawID1");
+      if(state.transform3D)
+      {
+         uTransform0       = glGetUniformLocation(program, "transform0");
+         uTransform1       = glGetUniformLocation(program, "transform1");
+         uTransform2       = glGetUniformLocation(program, "transform2");
+         uTransform3       = glGetUniformLocation(program, "transform3");
+      }
+      else
+         uPosOffset        = glGetUniformLocation(program, "posOffset");
       if(state.modelView)
          uMVMatrix         = glGetUniformLocation(program, "modelview_matrix");
 
@@ -301,6 +318,7 @@ public:
    float fogColor[3];
 
    float color[4];
+   float posOffset[3];
 
    int textureLayer;
 
@@ -333,18 +351,21 @@ public:
       }
       if(state.squishFactor)
          glBindAttribLocation(program, squishFactorAttribute,  "squishFactor");
-      //#if !defined(__ANDROID__)
-      glBindAttribLocation(program, drawIDAttribute, "drawID1");
-      //#endif
-      if(state.transform3D)
+      if(state.multiDraw)
       {
-         glBindAttribLocation(program, transform0Attribute, "transform0");
-         glBindAttribLocation(program, transform1Attribute, "transform1");
-         glBindAttribLocation(program, transform2Attribute, "transform2");
-         glBindAttribLocation(program, transform3Attribute, "transform3");
+         //#if !defined(__ANDROID__)
+         glBindAttribLocation(program, drawIDAttribute, "drawID1");
+         //#endif
+         if(state.transform3D)
+         {
+            glBindAttribLocation(program, transform0Attribute, "transform0");
+            glBindAttribLocation(program, transform1Attribute, "transform1");
+            glBindAttribLocation(program, transform2Attribute, "transform2");
+            glBindAttribLocation(program, transform3Attribute, "transform3");
+         }
+         else
+            glBindAttribLocation(program, posOffsetAttribute, "posOffset");
       }
-      else
-         glBindAttribLocation(program, posOffsetAttribute, "posOffset");
 #endif
    }
 
@@ -396,6 +417,7 @@ public:
       defs.concatf("\n#define NORMALS_INV_SCALE %d",        state.normalsInvScale2   ? 1 : 0);
       defs.concatf("\n#define FULL_3D_TRANSFORM %d",        state.transform3D        ? 1 : 0);
       defs.concatf("\n#define SQUISH_FACTOR %d",            state.squishFactor       ? 1 : 0);
+      defs.concatf("\n#define DISABLE_STEREO %d",           state.disableStereo      ? 1 : 0);
 
       for(i = 0; i < 8; i++)
       {
@@ -540,10 +562,15 @@ public:
          glUniform3fv(shader.uFogColor, 1, fogColor);
       }
 
-      if(modifiedUniforms.material && state.textureArray && !state.multiDraw)
+      if(modifiedUniforms.layer && state.textureArray && !state.multiDraw)
          // TODO: For now we don't have a mechanism for per draw layer...
       {
          glUniform1ui(shader.uLayer, textureLayer);
+      }
+
+      if(modifiedUniforms.pos && !state.transform3D && !state.multiDraw)
+      {
+         glUniform3fv(shader.uPosOffset, 1, posOffset);
       }
 #endif
    }
@@ -744,7 +771,21 @@ public:
       set
       {
          textureLayer = value;
-         modifiedUniforms.material = true;
+         modifiedUniforms.layer = true;
+      }
+   }
+
+   property bool disableStereo
+   {
+      set { ((ButterburShaderBits)state).disableStereo = value; }
+   }
+
+   property Vector3Df posOffset
+   {
+      set
+      {
+         memcpy(posOffset, value, 3*sizeof(float));
+         modifiedUniforms.pos = true;
       }
    }
 
@@ -753,7 +794,7 @@ public:
       if(((ButterburShaderBits)state).debugging != on)
       {
          ((ButterburShaderBits)state).debugging = on;
-         modifiedUniforms = { true, true, true, true, true };
+         modifiedUniforms = { true, true, true, true, true, true, true };
       }
    }
 
