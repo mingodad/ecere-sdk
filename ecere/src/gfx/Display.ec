@@ -1006,6 +1006,22 @@ public:
          else
             planes = viewSpace ? camera.viewClippingPlanes : camera.worldClippingPlanes;
 
+         if(object)
+         {
+            Vector3D cPos = *&camera.cPosition;
+            Vector3D oPos = *&object.wcenter;
+            Vector3D d { cPos.x - oPos.x, cPos.y - oPos.y, cPos.z - oPos.z };
+            double z = d.lengthApprox;
+            if(z > 30)
+            {
+               if(z > 40 && object.mesh && object.mesh.nVertices > 10000)
+                  return false;
+               double r = object.wradius * Max(*&camera.focalX, *&camera.focalY) / z;
+               if(r < 3)
+                  return false;
+            }
+         }
+
          visible = object.InsideFrustum(planes);
 
          if(visible || display3D.pickingPlanes)
